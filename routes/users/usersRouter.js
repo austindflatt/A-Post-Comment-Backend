@@ -1,5 +1,5 @@
 var express = require('express');
-const { createUser, userLogin } = require('./controller/userController');
+const { createUser, userLogin, updateProfile } = require('./controller/userController');
 const {
     checkIsEmpty,
     jwtMiddleware,
@@ -19,5 +19,8 @@ router.post('/create-user', checkIsEmpty, checkIsValid, createUser);
 
 // Login
 router.post('/login', checkIsEmpty, validateLogin, userLogin);
+
+// Update Profile
+router.put('/update-profile', jwtMiddleware, checkIsEmpty, validateUpdateData, updateProfile);
 
 module.exports = router;
