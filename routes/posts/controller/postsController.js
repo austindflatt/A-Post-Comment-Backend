@@ -44,7 +44,43 @@ const getPosts = async (req, res) => {
     }
 }
 
+const updatePost = async (req, res) => {
+	try {
+	  const { id } = req.params;
+	  
+	  const updatedPost = await Posts.findByIdAndUpdate(id, req.body, { new: true, });
+	  console.log(id)
+
+	  res.status(200).json({ message: "Post has been updated successfully", payload: updatedPost });
+	} catch (error) {
+		res.status(500).json({ message: "Error", error: errorHandler(error) });
+	}
+};
+
+const deletePost = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const decodedData = res.locals.decodedToken;
+        const foundUser = await User.findOne({ email: decodedData.email })
+        if(!foundUser) throw { message: 'User not found' };
+
+		const foundPost = await Posts.findByIdAndDelete(id);
+		if(!foundPost) throw { message: 'Post was not found' };
+
+        const filteredArray = foundUser.postHistory.filter((element) => element.toString() !== id);
+        foundUser.postHistory = filteredArray;
+        await foundUser.save();
+
+        res.status(200).json({ message: 'Post was successfully deleted', foundPost });
+    } catch (error) {
+        res.status(500).json({ message: 'Error', error: error.message });
+    }
+}
+
 module.exports = {
 	createPost,
 	getPosts,
+	deletePost,
+	updatePost,
 }
