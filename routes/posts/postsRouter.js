@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const { jwtMiddleware } = require('../users/lib/authMiddleware/index');
-const { createPost } = require('./controller/postsController');
+const { createPost, getPosts } = require('./controller/postsController');
 
 router.get('/', function(req, res, next) {
   res.send('hello from the posts route');
@@ -10,7 +10,7 @@ router.get('/', function(req, res, next) {
 router.post('/create-post', jwtMiddleware, createPost);
 
 // Get all posts from the current user
-router.get('/get-all-posts/',);
+router.get('/get-all-posts/', jwtMiddleware, getPosts);
 
 // Update a post
 router.delete('/update-post/:id',);

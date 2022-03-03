@@ -1,6 +1,5 @@
 const Posts = require('../model/Posts');
 const User = require('../../users/model/User');
-const { isAlpha } = require('validator');
 const { errorHandler } = require('../../users/utils/errorHandler');
 
 const createPost = async (req, res) => {
@@ -33,6 +32,19 @@ const createPost = async (req, res) => {
     }
 }
 
+const getPosts = async (req, res) => {
+    try {
+        const decodedData = res.locals.decodedToken;
+        const foundUser = await User.findOne({ email: decodedData.email })
+        if(!foundUser) throw { message: 'User not found' };
+        const foundPosts = await Posts.find({ owner: foundUser.id })
+        res.status(200).json({ payload: foundPosts });
+    } catch (error) {
+        res.status(500).json({ message: 'Error', error: error.message });
+    }
+}
+
 module.exports = {
 	createPost,
+	getPosts,
 }
