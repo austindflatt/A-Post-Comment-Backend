@@ -2,18 +2,19 @@ var express = require('express');
 var router = express.Router();
 
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+  res.send('Hello from the comments route');
 });
 
+// Create a comment
 router.post('/create-comment',);
 
-// Get all comments from user
-router.get('/get-comments/',);
-
-// Update comment
-router.delete('/delete-comment/:id',);
+// Get all commemts from a user
+router.get('/get-all-comments/',);
 
 // Delete a comment
 router.delete('/delete-comment/:id',);
+
+// Update a comment
+router.put('/update-comment/:id',);
 
 module.exports = router;
