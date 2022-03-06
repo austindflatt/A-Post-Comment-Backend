@@ -42,41 +42,53 @@ const getPosts = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error', error: error.message });
     }
-}
+};
 
 const updatePost = async (req, res) => {
-	try {
-	  const { id } = req.params;
-	  
-	  const updatedPost = await Posts.findByIdAndUpdate(id, req.body, { new: true, });
-	  console.log(id)
-
-	  res.status(200).json({ message: "Post has been updated successfully", payload: updatedPost });
-	} catch (error) {
-		res.status(500).json({ message: "Error", error: errorHandler(error) });
-	}
+    try {
+      const { id } = req.params;
+  
+      const decodedUser = res.locals.decodedToken;
+      const foundUser = await User.findOne({ email: decodedUser.email });
+  
+      const foundPost = await Posts.findById(id);
+  
+      if (foundUser._id.toString() === foundPost.owner.toString()) {
+        const updatedPost = await Posts.findByIdAndUpdate(id, req.body, {
+          new: true,
+        });
+        res.status(200).json({ message: "Updated the post", payload: updatedPost });
+      } else {
+        throw { message: "You are not authorized" };
+      }
+      
+    } catch (error) {
+      res.status(500).json({ message: error, error: errorHandler(error) });
+    }
 };
 
 const deletePost = async (req, res) => {
     try {
-        const { id } = req.params;
-
-        const decodedData = res.locals.decodedToken;
-        const foundUser = await User.findOne({ email: decodedData.email })
-        if(!foundUser) throw { message: 'User not found' };
-
-		const foundPost = await Posts.findByIdAndDelete(id);
-		if(!foundPost) throw { message: 'Post was not found' };
-
-        const filteredArray = foundUser.postHistory.filter((element) => element.toString() !== id);
-        foundUser.postHistory = filteredArray;
+      const { id } = req.params;
+  
+      const decodedUser = res.locals.decodedToken;
+      const foundUser = await User.findOne({ email: decodedUser.email });
+      const foundPost = await Posts.findById(id);
+  
+      if (foundUser._id.toString() === foundPost.owner.toString()) {
+        const deletedPost = await Posts.findByIdAndDelete(id);
+        await foundUser.postHistory.pull(id);
         await foundUser.save();
-
-        res.status(200).json({ message: 'Post was successfully deleted', foundPost });
+        res
+          .status(200)
+          .json({ message: "post was deleted", payload: deletedPost });
+      } else {
+        throw { message: "You do not have the permission to delete" };
+      }
     } catch (error) {
-        res.status(500).json({ message: 'Error', error: error.message });
+      res.status(500).json({ message: "error", error: error });
     }
-}
+};
 
 module.exports = {
 	createPost,
