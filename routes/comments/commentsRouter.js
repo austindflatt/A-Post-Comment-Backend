@@ -8,7 +8,7 @@ router.get('/', function(req, res, next) {
 });
 
 // Create a comment
-router.post('/create-comment', jwtMiddleware, checkIsEmpty, createComment);
+router.post('/create-comment/:postId', jwtMiddleware, checkIsEmpty, createComment);
 
 // Get all commemts from a user
 router.get('/get-all-comments/', jwtMiddleware, getComments);
