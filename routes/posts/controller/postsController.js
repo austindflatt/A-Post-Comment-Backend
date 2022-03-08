@@ -1,5 +1,6 @@
 const Posts = require('../model/Posts');
 const User = require('../../users/model/User');
+const Comments = require('../../comments/model/Comments');
 const { errorHandler } = require('../../users/utils/errorHandler');
 
 const createPost = async (req, res) => {
@@ -94,8 +95,9 @@ const deletePost = async (req, res) => {
       }
 
       await foundUser.postHistory.pull(id);
-
       await foundUser.save();
+
+      await Comments.deleteMany({ post: id });
 
       res.status(200).json({ message: "Post was deleted successfully", payload: deletedPost });
     } catch (error) {
