@@ -53,15 +53,21 @@ const updatePost = async (req, res) => {
   
       const foundPost = await Posts.findById(id);
   
-      if (foundUser._id.toString() === foundPost.owner.toString()) {
-        const updatedPost = await Posts.findByIdAndUpdate(id, req.body, {
-          new: true,
-        });
-        res.status(200).json({ message: "Updated the post", payload: updatedPost });
-      } else {
-        throw { message: "You are not authorized" };
+      if (foundUser._id.toString() !== foundPost.owner.toString()) {
+        return res.status(500).json({
+          messgae: 'You do not have permission to update this post.'
+        })
       }
-      
+
+      const updatedPost = await Posts.findByIdAndUpdate(id, req.body, {
+        new: true,
+      });
+
+      if(updatedPost === null) {
+        throw new Error('No post with that ID is found')
+      }
+
+      res.status(200).json({ message: "Updated the post", payload: updatedPost });
     } catch (error) {
       res.status(500).json({ message: error, error: errorHandler(error) });
     }
@@ -75,16 +81,23 @@ const deletePost = async (req, res) => {
       const foundUser = await User.findOne({ email: decodedUser.email });
       const foundPost = await Posts.findById(id);
   
-      if (foundUser._id.toString() === foundPost.owner.toString()) {
-        const deletedPost = await Posts.findByIdAndDelete(id);
-        await foundUser.postHistory.pull(id);
-        await foundUser.save();
-        res
-          .status(200)
-          .json({ message: "post was deleted", payload: deletedPost });
-      } else {
-        throw { message: "You do not have the permission to delete" };
+      if (foundUser._id.toString() !== foundPost.owner.toString()) {
+        return res.status(500).json({
+          messgae: 'You do not have permission to delete this post.'
+        })
       }
+      
+      const deletedPost = await Posts.findByIdAndDelete(id);
+
+      if(deletePost === null) {
+        throw new Error('No post with that ID is found')
+      }
+
+      await foundUser.postHistory.pull(id);
+
+      await foundUser.save();
+
+      res.status(200).json({ message: "Post was deleted successfully", payload: deletedPost });
     } catch (error) {
       res.status(500).json({ message: "error", error: error });
     }
